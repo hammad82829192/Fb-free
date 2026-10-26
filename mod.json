@@ -1,0 +1,451 @@
+{
+  "geode": "5.10.1",
+  "gd": {
+    "mac": "2.2081",
+    "win": "2.2081",
+    "android": "2.2081",
+    "ios": "2.2081"
+  },
+  "id": "ben.frame-lab",
+  "name": "FB Frame Counter free",
+  "version": "v0.5.0-beta.83",
+  "developer": "Ben",
+  "description": "Record, replay and analyze input timings at 240 FPS, or higher with a TPS bypass. Internet is required to start recordings; the free plan includes one recording per UTC day at 240 FPS, on levels of any length.",
+  "resources": {
+    "files": [
+      "resources/*.wav",
+      "resources/*-LICENSE.txt"
+    ]
+  },
+  "settings": {
+    "fps": {
+      "type": "int",
+      "name": "FPS",
+      "description": "The FPS frames are counted at. 60 and 120: the game runs as normal and frames are counted at that FPS, so a 4-frame timing at 240 is 1 frame at 60. 240: the game's own rate. Above 240 (paid version only): the physics FPS (TPS) to record, import and scan at, which is not your display FPS. Set it to import high FPS macros, and turn on a TPS bypass at the same FPS (Eclipse: Physics Bypass); at 480, a 240 FPS frame perfect is 2 frames, and high FPS scans take a lot longer. Changes above 240 apply to the next recording, import or scan.",
+      "default": 240,
+      "min": 60,
+      "max": 1000,
+      "control": {
+        "arrows": true,
+        "arrow-step": 120,
+        "big-arrows": false,
+        "slider": false,
+        "input": true
+      }
+    },
+    "markers": {
+      "type": "bool",
+      "name": "Click circles",
+      "default": true
+    },
+    "counters": {
+      "type": "bool",
+      "name": "Frame counters",
+      "default": true
+    },
+    "precision-counter": {
+      "type": "bool",
+      "name": "Precision counter",
+      "description": "Shows NaNDL-style precision (sigma per second, 24-hour model) of the clicks played so far in the bottom-left corner during playback. Uses windows of 1-10 frames at 240 FPS, or the same time at a higher FPS.",
+      "default": true
+    },
+    "scan-time-limit-minutes": {
+      "type": "int",
+      "name": "Scan time limit (minutes)",
+      "description": "Stop measuring after this many minutes and leave the rest unmeasured. 0 means no limit, so every click is measured however long it takes. You can always Pause or Cancel. High FPS scans take a lot longer, so a limit leaves more clicks unmeasured.",
+      "default": 0,
+      "min": 0,
+      "max": 240
+    },
+    "fast-scan": {
+      "type": "bool",
+      "name": "Fast scan",
+      "description": "Skips repeat work during a scan: the normal-speed first replay of a recording, re-running tight ship and wave clicks from the start of the level, and replaying the rest of the level once a changed click is back on an already checked path. Turn off for the slower scan that replays everything.",
+      "default": true
+    },
+    "sound-early-ms": {
+      "type": "int",
+      "name": "Sound timing (ms early)",
+      "default": -1,
+      "min": -1,
+      "max": 300,
+      "description": "In playback each click sound is started a little ahead of its click, so it is heard on the click and not after it: the game's audio takes a moment to reach the speakers. -1 is automatic (the delay of the game's audio buffer). 0 starts each sound on the click, as older versions did. If the sounds come early or late in your videos, set the number of milliseconds here."
+    },
+    "scan-part-from": {
+      "type": "int",
+      "name": "Scan part: from (%)",
+      "default": 0,
+      "min": 0,
+      "max": 100,
+      "description": "Scan one part of the level: only the clicks made from this percent of the level are measured. 0 with 100 below is the whole level. The recording is still checked from start to finish first, and results measured before for the rest are kept. Also in the FB menu: Settings, then Scan."
+    },
+    "scan-part-to": {
+      "type": "int",
+      "name": "Scan part: to (%)",
+      "default": 100,
+      "min": 0,
+      "max": 100,
+      "description": "Scan one part of the level: only the clicks made before this percent of the level are measured. 100 with 0 above is the whole level."
+    },
+    "record-speed": {
+      "type": "float",
+      "name": "Recording speed",
+      "default": 1.0,
+      "min": 0.1,
+      "max": 1.0,
+      "description": "The game runs this much slower while you record, music included: 0.5 is half speed. The clicks land on the same frames as at full speed, and playback and scans always run at full speed. Also in the FB menu: Settings, then Recording."
+    },
+    "number-beside-ring": {
+      "type": "bool",
+      "name": "Number beside the ring",
+      "default": false,
+      "description": "Puts a click's number beside its ring, as in frame window videos: left of it for a press, right of it for a release. Off: above the ring. Also in the FB menu: Settings, then Sizes."
+    },
+    "show-hitboxes": {
+      "type": "bool",
+      "name": "Hitboxes",
+      "default": false,
+      "description": "Draws the game's hitboxes while you play, record and watch a playback, in any mode, not only practice. Never during a scan. Also in the FB menu: Settings, then Recording."
+    },
+    "show-trajectory": {
+      "type": "bool",
+      "name": "Trajectory",
+      "default": false,
+      "description": "While you play and record, draws where the icon goes from here with the button held (green) and let go (orange), with a red cross where it would die. It follows blocks, slopes and spikes and ignores orbs, pads and portals. Not in platformer levels and never during a scan. Also in the FB menu: Settings, then Recording."
+    },
+    "trajectory-length": {
+      "type": "int",
+      "name": "Trajectory length",
+      "default": 180,
+      "min": 30,
+      "max": 480,
+      "description": "How many frames ahead the trajectory is drawn (240 is one second)."
+    },
+    "spam-run-corridor": {
+      "type": "bool",
+      "name": "Spam number from the wave corridor (experimental)",
+      "default": false,
+      "description": "Works out a wave spam run's number from the measured corridor (average height minus average gap plus one) instead of the average of its clicks. Not accurate yet where a corridor's walls are staggered. Needs One number per spam run."
+    },
+    "show-corridor": {
+      "type": "bool",
+      "name": "Show wave corridor",
+      "default": false,
+      "description": "During a playback, draws two red lines along every wave part: how far up and how far down the wave's centre could have gone before it died. A scan measures them, so scan the recording first. Where the level's ground or ceiling is the nearest thing, there is no line."
+    },
+    "playback-speed": {
+      "type": "float",
+      "name": "Playback speed",
+      "default": 1.0,
+      "min": 0.1,
+      "max": 1.0,
+      "description": "The visible playback runs this much slower, music and click sounds included: 0.5 is half speed. For slow-motion videos. Also in the FB menu: Settings, then Recording."
+    },
+    "hitboxes-on-death": {
+      "type": "bool",
+      "name": "Hitboxes on death",
+      "default": false,
+      "description": "Draws the game's hitboxes from the moment you die until the respawn, in any mode. Also in the FB menu: Settings, Recording, Tools."
+    },
+    "input-display": {
+      "type": "bool",
+      "name": "Input display",
+      "default": false,
+      "description": "Bottom right: whether the button is held, for each icon in a dual. Also in the FB menu: Settings, Recording, Tools."
+    },
+    "video-legend": {
+      "type": "bool",
+      "name": "Legend at playback",
+      "default": false,
+      "description": "When a playback starts, shows the counter's rows in their colours with the time each stands for, for four seconds. For videos. Also in the FB menu: Settings, Recording, Tools."
+    },
+    "gd-style": {
+      "type": "bool",
+      "name": "GD style menus",
+      "default": false,
+      "description": "Draws every FB screen with the game's own art: its brown panels, green buttons and font. Off: the modern dark style. Also in the FB menu: Settings, then Sizes."
+    },
+    "frame-stepper": {
+      "type": "bool",
+      "name": "Frame stepper",
+      "default": false,
+      "description": "In a level, while you play or record: V stops the level between two frames, C plays one frame at a time (hold it for a slow run), V again lets it run. What you press while it stands still is played on the next frame. Also in the FB menu: Settings, then Recording."
+    },
+    "counter-flash": {
+      "type": "bool",
+      "name": "Flash the counter row",
+      "default": true,
+      "description": "During a playback, the number of the row a click is counted in lights up white for a moment."
+    },
+    "marker-milliseconds": {
+      "type": "bool",
+      "name": "Milliseconds under the number",
+      "default": false,
+      "description": "Shows each click's window in milliseconds, in white, straight under its frame number (one frame at 240 FPS is 4.2 ms). Also in the FB menu: Settings, then Sizes."
+    },
+    "scan-speed": {
+      "type": "int",
+      "name": "Scan speed",
+      "default": 0,
+      "min": 0,
+      "max": 2,
+      "description": "A scan spends most of its time on clicks with plenty of room. 0 Full: every click is searched over the whole scan range. 1 Fast: a click is no longer searched once its window is wider than anything that is shown (the widest circle, the widest counter row with an end, the precision counter's 10 frames) and reads as that many frames with a plus; every circle, count and the precision number stay as a full scan gives them. 2 Fastest: only clicks up to the widest counter row with an end are measured (1 to 4 frames with the usual rows); the rest read 5+, show no circle, and there is no precision number. A slower scan later goes on from what a faster one saved. Flight timings are always measured in full. Also in the FB menu: Settings, then Scan."
+    },
+    "cbf-mode": {
+      "type": "bool",
+      "name": "CBF mode",
+      "default": false,
+      "description": "Shows each click's window as a time, in frames with decimals, the way it is with Click Between Frames on: a click then lands at its own moment inside a frame, so a 3-frame window is really somewhere from 2 to 4 frames long. The scan follows both edges of every window down to a sixteenth of a frame, which makes it longer. Only the number on each circle changes: the counter rows stay whole counts. Recordings are still made on whole frames. Also on the FB menu."
+    },
+    "skip-useless-clicks": {
+      "type": "bool",
+      "name": "Leave out useless clicks",
+      "default": true,
+      "description": "A scan replays the recording once more for each click with that click taken out. When the run still finishes, the click changes nothing: it gets no circle and is not counted. Edit Clicks shows how many were left out, and switching one back on there keeps it on. Off: every click is counted."
+    },
+    "count-ship": {
+      "type": "bool",
+      "name": "Count straight fly",
+      "default": false,
+      "description": "Off: straight fly in the ship (the ship held level for several clicks in a row) gets no circle, number or sound and is left out of the counter, as in NaN GD's videos. So do two or more ship clicks made within one block. The other ship clicks are counted. All of them are still measured, so turning this on shows them at once."
+    },
+    "straight-fly-clicks": {
+      "type": "int",
+      "name": "Straight fly from",
+      "default": 4,
+      "min": 2,
+      "max": 20,
+      "description": "How many clicks in a row the ship has to stay level for them to be straight fly. Lower leaves more ship clicks out."
+    },
+    "nan-gd-settings": {
+      "type": "bool",
+      "name": "NaN GD settings",
+      "default": false,
+      "description": "Counts the way NaN GD's videos do: his rows (9-10 down to 1), circles up to 10 frames, whole frames, no straight fly and no wave spam. Switch it in the FB menu (Settings, Counter): there it sets all of that at once and puts your own settings back when you switch it off."
+    },
+    "count-wave-spam": {
+      "type": "bool",
+      "name": "Count wave spam",
+      "default": false,
+      "description": "Off: wave spam (five or more wave clicks made within two blocks) gets no circle, number or sound and is left out of the counter. It is still measured, so turning this on shows it at once."
+    },
+    "wave-spam-clicks": {
+      "type": "int",
+      "name": "Wave spam from",
+      "default": 5,
+      "min": 3,
+      "max": 20,
+      "description": "How many wave clicks (presses and releases) within two blocks are wave spam. Lower leaves more wave clicks out."
+    },
+    "spam-run-average": {
+      "type": "bool",
+      "name": "One number per spam run",
+      "default": true,
+      "description": "A run of quick wave clicks (eight or more presses and releases, each within a twelfth of a second of the one before) shows one number on every click, as NaN GD gives a spam one window: the height of the corridor in frames of wave travel, less the average gap between its clicks, plus one. A scan measures the corridor. A recording scanned before this update, or a run with open space on one side, shows the average of what its clicks measure one by one. Clicks shown as \"at least\", typed in Edit Clicks or left out keep what they have. Off: every click shows its own number."
+    },
+    "auto-recentre": {
+      "type": "bool",
+      "name": "Auto recentre",
+      "default": true,
+      "description": "A click recorded on the edge of its window leaves the icon off the middle of the gap, and the next click then reads narrower than the gap is. A scan measures that next click again with the first one in the middle of its window, and shows the wider of the two."
+    },
+    "condition-text": {
+      "type": "bool",
+      "name": "Condition text",
+      "default": true,
+      "description": "During a playback, a line in the top corner for a click whose window depends on the clicks around it, such as: 1 to 2 frames, depending on your setup clicks."
+    },
+    "condition-text-frames": {
+      "type": "int",
+      "name": "Condition text up to",
+      "default": 3,
+      "min": 1,
+      "max": 60,
+      "description": "The line is shown for a click whose smaller number is at most this many frames."
+    },
+    "condition-text-left": {
+      "type": "bool",
+      "name": "Condition text on the left",
+      "default": false,
+      "description": "Off: the line is in the top right corner. On: on the left, under the counter's rows."
+    },
+    "ignore-incomplete": {
+      "type": "bool",
+      "name": "Ignore incomplete macro",
+      "default": false,
+      "description": "A recording or macro that dies part-way is kept and measured up to that point, instead of being refused. A recording you stop before the end keeps the furthest you got."
+    },
+    "auto-update": {
+      "type": "bool",
+      "name": "Automatic updates",
+      "description": "Checks fbmod.com for a new version when the game starts and installs it in the background. The new version is used from the next game start. Windows, Mac and Android.",
+      "default": true
+    },
+    "sounds": {
+      "type": "bool",
+      "name": "Click sounds",
+      "default": true,
+      "description": "Play a ding during playback for clicks that show a circle. Clicks wider than Max circle frame are silent. Scans stay silent."
+    },
+    "vary-sound-pitch": {
+      "type": "bool",
+      "name": "Vary sound pitch",
+      "default": true,
+      "description": "From 2 frames up every click plays the same ding, lower the tighter the click: two semitones a step through 2, 3, 4, 5-6 and 7-8 frames to 9 frames and wider (highest). A 1-frame click keeps its own sound, and a sound you chose yourself for a frame count plays as it is. Also in the FB menu: Counter Settings, then Sounds."
+    },
+    "counter-scale": {
+      "type": "float",
+      "name": "Counter size",
+      "default": 1.0,
+      "min": 0.5,
+      "max": 2.0
+    },
+    "marker-scale": {
+      "type": "float",
+      "name": "Circle size",
+      "default": 1.0,
+      "min": 0.5,
+      "max": 2.0,
+      "description": "Size of the click circles and their numbers. Also in the FB menu: Counter Settings, then Sizes."
+    },
+    "marker-text-scale": {
+      "type": "float",
+      "name": "Circle number size",
+      "default": 1.0,
+      "min": 0.5,
+      "max": 3.0,
+      "description": "Size of the frame number shown at each click circle. Also in the FB menu: Counter Settings, then Sizes."
+    },
+    "max-counted-frames": {
+      "type": "int",
+      "name": "Max circle frame",
+      "default": 10,
+      "min": 1,
+      "max": 250,
+      "description": "Hide click circles, and their sounds, above this frame width. Frames are counted at the recording's FPS. Counters and copied counts are unchanged."
+    },
+    "counter-ranges": {
+      "type": "string",
+      "name": "Counter rows",
+      "default": "1,2,3,4,5+",
+      "description": "Use comma-separated frame numbers or ranges, such as 1,2,3,7-8. Frames are counted at the recording's FPS."
+    },
+    "counter-colors": {
+      "type": "string",
+      "name": "Counter colours",
+      "default": "",
+      "description": "The colours of the counter rows and their click circles. Pick them in the FB menu: Settings, then Colours. Written as first frame and colour, such as 1:ff4c54,5:8df791. Leave empty for the default colours."
+    },
+    "sound-1": {
+      "type": "file",
+      "name": "Custom 1 frame sound",
+      "default": "",
+      "control": {
+        "filters": [
+          {
+            "description": "Audio",
+            "files": [
+              "*.wav",
+              "*.ogg",
+              "*.mp3"
+            ]
+          }
+        ]
+      },
+      "description": "Leave empty for the bundled cue. Choose a local audio file."
+    },
+    "sound-2": {
+      "type": "file",
+      "name": "Custom 2 frame sound",
+      "default": "",
+      "control": {
+        "filters": [
+          {
+            "description": "Audio",
+            "files": [
+              "*.wav",
+              "*.ogg",
+              "*.mp3"
+            ]
+          }
+        ]
+      },
+      "description": "Leave empty for the bundled cue. Choose a local audio file."
+    },
+    "sound-3": {
+      "type": "file",
+      "name": "Custom 3 frame sound",
+      "default": "",
+      "control": {
+        "filters": [
+          {
+            "description": "Audio",
+            "files": [
+              "*.wav",
+              "*.ogg",
+              "*.mp3"
+            ]
+          }
+        ]
+      },
+      "description": "Leave empty for the bundled cue. Choose a local audio file."
+    },
+    "sound-4": {
+      "type": "file",
+      "name": "Custom 4 frame sound",
+      "default": "",
+      "control": {
+        "filters": [
+          {
+            "description": "Audio",
+            "files": [
+              "*.wav",
+              "*.ogg",
+              "*.mp3"
+            ]
+          }
+        ]
+      },
+      "description": "Leave empty for the bundled cue. Choose a local audio file."
+    },
+    "sound-5": {
+      "type": "file",
+      "name": "Custom 5 frame sound",
+      "default": "",
+      "control": {
+        "filters": [
+          {
+            "description": "Audio",
+            "files": [
+              "*.wav",
+              "*.ogg",
+              "*.mp3"
+            ]
+          }
+        ]
+      },
+      "description": "Leave empty for the bundled cue. Choose a local audio file."
+    },
+    "sound-6": {
+      "type": "file",
+      "name": "Custom 6 frame sound",
+      "default": "",
+      "control": {
+        "filters": [
+          {
+            "description": "Audio",
+            "files": [
+              "*.wav",
+              "*.ogg",
+              "*.mp3"
+            ]
+          }
+        ]
+      },
+      "description": "Leave empty for the bundled cue. Choose a local audio file."
+    },
+    "sound-7": {
+      "type": "file",
+      "name": "Custom 7 frame sound",
+      "default": "",
+      "control
